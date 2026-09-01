@@ -53,7 +53,7 @@ import tidy3d.web as web
 # ── Local project imports ────────────────────────────────────────────────────
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from utils.materials import Si, SiO2, FREQ0, WAVELENGTH_UM
+from utils.materials import Si, SiO2, Air, FREQ0, WAVELENGTH_UM
 from utils.materials import WG_WIDTH_UM, WG_HEIGHT_UM, BOX_THICKNESS_UM
 from utils.plotting  import (plot_efield_xy, plot_mode_intensity,
                               plot_propagation)
@@ -154,7 +154,7 @@ structures = [buried_oxide, waveguide]
 mode_spec = td.ModeSpec(
     num_modes=4,          # find 4 modes (allows us to confirm only 1 TE guided)
     target_neff=2.4,      # starting neff for eigenmode search
-    num_pml=12,           # PML layers in transverse mode solver (more → more accurate)
+    num_pml=(6, 6),           # PML layers in transverse mode solver (more → more accurate)
 )
 
 mode_source = td.ModeSource(
@@ -277,7 +277,6 @@ sim = td.Simulation(
 print(f"\nSimulation assembled successfully.")
 print(f"  Grid cells (approx): {sim.num_cells:,}")
 print(f"  Time steps (approx): {sim.num_time_steps:,}")
-print(f"  Estimated memory:    {sim.estimate_cost()}")
 
 
 # ════════════════════════════════════════════════════════════════════════════

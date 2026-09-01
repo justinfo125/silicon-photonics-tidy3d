@@ -222,7 +222,7 @@ def compute_Lc_supermode(gap_um: float) -> tuple[float, float, float]:
     mode_spec_super = td.ModeSpec(
         num_modes=4,           # find 4; we'll identify even/odd by symmetry
         target_neff=2.4,
-        num_pml=12,
+        num_pml=(12, 12),
         precision="double",    # higher precision for small Δneff
     )
 
