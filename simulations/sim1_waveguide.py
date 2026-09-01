@@ -327,7 +327,7 @@ def run_and_postprocess(mode: str = "cloud"):
         print("\nDry-run complete.  Geometry verified, no solve performed.")
         return
 
-    plot_geometry()
+    #plot_geometry()
 
     # ── 8a. Submit & run ─────────────────────────────────────────────────────
     print(f"\nSubmitting to Tidy3D ({mode} mode)...")
@@ -337,8 +337,8 @@ def run_and_postprocess(mode: str = "cloud"):
         # task_name is used to find the job in the Tidy3D dashboard.
         sim_data = web.run(
             sim,
-            task_name="SOI_waveguide_TE_1550nm",
-            path="sim1_data.hdf5",   # cached result — re-run loads from cache
+            task_name="SOI_waveguide_TE_1550nm_v2",
+            path="sim1_data_v2.hdf5",
             verbose=True,
         )
     else:
@@ -358,7 +358,6 @@ def run_and_postprocess(mode: str = "cloud"):
     for i in range(mode_spec.num_modes):
         try:
             neff_i = mode_data.n_eff.sel(mode_index=i, f=FREQ0).item()
-            loss_i = mode_data.n_group.sel(mode_index=i, f=FREQ0).item()
             amp_i  = amps.sel(mode_index=i, f=FREQ0).item()
             power_i = np.abs(amp_i)**2
             print(f"  Mode {i}: neff = {neff_i:.4f},  "
@@ -376,7 +375,7 @@ def run_and_postprocess(mode: str = "cloud"):
     xsec_data = sim_data["xsec_field_monitor"]
 
     # Ex component at FREQ0 — shape: (Nx, Ny)
-    Ex_2d = xsec_data["Ex"].sel(f=FREQ0).squeeze()
+    Ex_2d = xsec_data.Ex.sel(f=FREQ0).squeeze()
     Ex_np = Ex_2d.values.real   # take real part for instantaneous snapshot
 
     x_coords = Ex_2d.coords["x"].values
@@ -389,14 +388,14 @@ def run_and_postprocess(mode: str = "cloud"):
         Ex=Ex_norm, x_coords=x_coords, y_coords=y_coords,
         title="TE₀ Mode: Ex Field Profile  (450×220 nm SOI, λ=1550 nm)",
         wg_width=WG_WIDTH_UM, wg_height=WG_HEIGHT_UM,
-        save_path="../results/sim1_Ex_profile.png",
+        save_path="../results/sim1_Ex_profile.png", center_y=wg_center_y,
     )
     plt.show()
 
     # Total intensity |E|² = |Ex|² + |Ey|² + |Ez|²
     intensity = np.zeros_like(Ex_np)
     for comp in ["Ex", "Ey", "Ez"]:
-        E = xsec_data[comp].sel(f=FREQ0).squeeze().values
+        E = getattr(xsec_data, comp).sel(f=FREQ0).squeeze().values
         intensity += np.abs(E)**2
 
     intensity_norm = intensity / np.max(intensity)
@@ -404,20 +403,22 @@ def run_and_postprocess(mode: str = "cloud"):
         intensity=intensity_norm, x_coords=x_coords, y_coords=y_coords,
         title="TE₀ Mode: Total Intensity |E|²  (450×220 nm SOI, λ=1550 nm)",
         wg_width=WG_WIDTH_UM, wg_height=WG_HEIGHT_UM,
-        save_path="../results/sim1_intensity_profile.png",
+        save_path="../results/sim1_intensity_profile.png", center_y=wg_center_y,
     )
     plt.show()
 
     # ── 8d. Extract top-down propagation field ────────────────────────────────
     topdown_data = sim_data["topdown_field_monitor"]
-    Ex_topdown   = topdown_data["Ex"].sel(f=FREQ0).squeeze()
-    Ex_td_np     = Ex_topdown.values.real
+    Ex_topdown = topdown_data.Ex.sel(f=FREQ0)
 
     x_td = Ex_topdown.coords["x"].values
     z_td = Ex_topdown.coords["z"].values
 
     # Plot propagation (average |Ex| across x vs z)
-    power_z = np.mean(np.abs(Ex_topdown.values)**2, axis=0)
+    Ex_td_np = Ex_topdown.values.squeeze()  # shape: (Nx, Nz)
+    power_z = np.mean(np.abs(Ex_td_np)**2, axis=0)  # average over x, keep z
+    z_td = Ex_topdown.coords["z"].values
+
     fig3 = plot_propagation(
         power_z=power_z, z_coords=z_td,
         title="Power Propagation Along SOI Waveguide (λ=1550 nm)",

@@ -88,6 +88,7 @@ def plot_efield_xy(
     title: str = "Electric Field |Ex| — TE Mode",
     wg_width: Optional[float] = None,
     wg_height: Optional[float] = None,
+    center_y: float = 0.0,
     save_path: Optional[str] = None,
 ) -> plt.Figure:
     """
@@ -124,7 +125,7 @@ def plot_efield_xy(
 
     # Optional geometry overlay
     if wg_width is not None and wg_height is not None:
-        add_waveguide_outline(ax, wg_width, wg_height)
+        add_waveguide_outline(ax, wg_width, wg_height, center_y=center_y)
         ax.legend(loc="upper right", fontsize=9, framealpha=0.7)
 
     ax.set_xlabel("x  [µm]")
@@ -144,6 +145,7 @@ def plot_mode_intensity(
     title: str = "Mode Intensity  |E|²",
     wg_width: Optional[float] = None,
     wg_height: Optional[float] = None,
+    center_y: float = 0.0,
     save_path: Optional[str] = None,
 ) -> plt.Figure:
     """
@@ -165,7 +167,7 @@ def plot_mode_intensity(
     if wg_width is not None and wg_height is not None:
         # White outline visible against dark 'inferno' background
         rect = Rectangle(
-            xy=(-wg_width / 2, -wg_height / 2),
+            xy=(-wg_width / 2, center_y - wg_height / 2),
             width=wg_width, height=wg_height,
             linewidth=1.5, edgecolor="white",
             facecolor="none", zorder=3, label="Si WG",
@@ -200,7 +202,7 @@ def plot_propagation(
     """
     fig, ax = plt.subplots(figsize=(7, 3.5))
 
-    ax.plot(z_coords, power_z / power_z[0],
+    ax.plot(z_coords, power_z / np.max(power_z),
             color=PALETTE["accent"], linewidth=2.0, label=label)
     ax.axhline(1.0, color=PALETTE["grid"], linewidth=1.0, linestyle="--")
     ax.set_ylim(0, 1.15)
