@@ -1,0 +1,7 @@
+# Silicon Photonics Tidy3D Project
+# Install with: pip install -r requirements.txt
+
+tidy3d>=2.6.0          # FDTD solver + mode solver plugin
+numpy>=1.24.0
+matplotlib>=3.7.0
+scipy>=1.11.0          # used for curve fitting in post-processing
