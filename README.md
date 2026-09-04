@@ -1,6 +1,6 @@
 # Silicon Photonics FDTD Simulations — Tidy3D
 
-**Author:** Justin Petelka  
+**Author:** Justin Cheong  
 **Platform:** 220 nm SOI (Silicon-on-Insulator)  
 **Solver:** [Tidy3D](https://docs.flexcompute.com/projects/tidy3d/) by Flexcompute — GPU-accelerated FDTD  
 **Wavelength:** 1550 nm (C-band)
